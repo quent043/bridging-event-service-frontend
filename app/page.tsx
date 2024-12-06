@@ -6,6 +6,8 @@ import { io } from "socket.io-client";
 export default function Home() {
   const [tokenVolumes, setTokenVolumes] = useState<Record<string, number>>({});
   const [chainVolumes, setChainVolumes] = useState<Record<string, number>>({});
+  const [highlightedToken, setHighlightedToken] = useState<string | null>(null);
+  const [highlightedChain, setHighlightedChain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,20 +42,24 @@ export default function Home() {
 
     // Listen for token volume updates
     socket.on("token_volume_update", (args: any) => {
-      console.log("Token volume update:", args);
-      // setTokenVolumes((prev) => ({
-      //   ...prev,
-      //   [token]: Number(updatedTokenVolume),
-      // }));
+      const { token, totalVolume } = args;
+      setTokenVolumes((prev) => ({
+        ...prev,
+        [token]: Number(totalVolume),
+      }));
+      setHighlightedToken(token);
+      setTimeout(() => setHighlightedToken(null), 2000); // Remove highlight after 2 seconds
     });
 
     // Listen for chain volume updates
     socket.on("chain_volume_update", (args: any) => {
-      console.log("Chain volume update:", args);
-      // setChainVolumes((prev) => ({
-      //   ...prev,
-      //   [chainId]: Number(updatedChainVolume),
-      // }));
+      const { chainId, totalVolume } = args;
+      setChainVolumes((prev) => ({
+        ...prev,
+        [chainId]: Number(totalVolume),
+      }));
+      setHighlightedChain(chainId);
+      setTimeout(() => setHighlightedChain(null), 2000); // Remove highlight after 2 seconds
     });
 
     // Cleanup WebSocket on component unmount
@@ -78,7 +84,12 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-4">Token Volumes</h2>
             <ul className="list-disc list-inside">
               {Object.entries(tokenVolumes).map(([token, volume]) => (
-                  <li key={token} className="text-gray-700">
+                  <li
+                      key={token}
+                      className={`text-gray-700 transition-all duration-500 ${
+                          highlightedToken === token ? "bg-yellow-200" : ""
+                      }`}
+                  >
                     <span className="font-medium">{token}</span>: {volume}
                   </li>
               ))}
@@ -90,7 +101,12 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-4">Chain Volumes</h2>
             <ul className="list-disc list-inside">
               {Object.entries(chainVolumes).map(([chain, volume]) => (
-                  <li key={chain} className="text-gray-700">
+                  <li
+                      key={chain}
+                      className={`text-gray-700 transition-all duration-500 ${
+                          highlightedChain === chain ? "bg-green-200" : ""
+                      }`}
+                  >
                     <span className="font-medium">{chain}</span>: {volume}
                   </li>
               ))}
