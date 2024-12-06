@@ -25,9 +25,24 @@ export default function Home() {
 
         const tokenData = await tokenResponse.json();
         const chainData = await chainResponse.json();
+        console.log(tokenData.data, chainData.data);
 
-        setTokenVolumes(tokenData.data);
-        setChainVolumes(chainData.data);
+        const sortedTokenVolumes = Object.fromEntries(
+            Object.entries(tokenData.data).sort(([, volA], [, volB]) => Number(volB) - Number(volA))
+        ) as Record<string, number>;
+
+        const sortedChainVolumes = Object.fromEntries(
+            Object.entries(chainData.data).sort(([, volA], [, volB]) => Number(volB) - Number(volA))
+        ) as Record<string, number>;
+
+        console.log(sortedTokenVolumes, 'sortedTokenVolumes');
+        console.log(sortedChainVolumes, 'sortedChainVolumes');
+
+
+        // Set state with sorted data
+        setTokenVolumes(sortedTokenVolumes);
+        setChainVolumes(sortedChainVolumes);
+
         setError(null); // Clear errors if successful
       } catch (err: any) {
         console.error(err);
@@ -37,27 +52,45 @@ export default function Home() {
 
     fetchData();
 
+
     // Setup WebSocket connection
     const socket = io("http://localhost:3000"); // Replace with your backend WebSocket URL
 
     // Listen for token volume updates
     socket.on("token_volume_update", (args: any) => {
       const { token, totalVolume } = args;
-      setTokenVolumes((prev) => ({
-        ...prev,
-        [token]: Number(totalVolume),
-      }));
+      setTokenVolumes((prev) => {
+        const updated = {
+          ...prev,
+          [token]: Number(totalVolume),
+        };
+
+        // Sort entries by volume in descending order
+        const sorted = Object.fromEntries(
+            Object.entries(updated).sort(([, volA], [, volB]) => (volB as number) - (volA as number))
+        ) as Record<string, number>;
+
+        return sorted;
+      });
       setHighlightedToken(token);
       setTimeout(() => setHighlightedToken(null), 2000); // Remove highlight after 2 seconds
     });
 
-    // Listen for chain volume updates
     socket.on("chain_volume_update", (args: any) => {
       const { chainId, totalVolume } = args;
-      setChainVolumes((prev) => ({
-        ...prev,
-        [chainId]: Number(totalVolume),
-      }));
+      setChainVolumes((prev) => {
+        const updated = {
+          ...prev,
+          [chainId]: Number(totalVolume),
+        };
+
+        // Sort entries by volume in descending order
+        const sorted = Object.fromEntries(
+            Object.entries(updated).sort(([, volA], [, volB]) => (volB as number) - (volA as number))
+        ) as Record<string, number>;
+
+        return sorted;
+      });
       setHighlightedChain(chainId);
       setTimeout(() => setHighlightedChain(null), 2000); // Remove highlight after 2 seconds
     });
