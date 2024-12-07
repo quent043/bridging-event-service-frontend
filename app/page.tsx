@@ -6,6 +6,7 @@ import _ from "lodash";
 
 type TokenVolume = [string, number];
 type ChainVolume = [string, number];
+type BridgeUsage = [string, number];
 
 const formatNumberToExponential = (value: number): string => {
   if (value >= 1e6) {
@@ -20,26 +21,31 @@ const formatNumberToExponential = (value: number): string => {
 export default function Home() {
   const [tokenVolumes, setTokenVolumes] = useState<TokenVolume[]>([]);
   const [chainVolumes, setChainVolumes] = useState<ChainVolume[]>([]);
+  const [bridgeUsageCounts, setBridgeUsageCounts] = useState<BridgeUsage[]>([]);
   const [highlightedToken, setHighlightedToken] = useState<string | null>(null);
   const [highlightedChain, setHighlightedChain] = useState<string | null>(null);
+  const [highlightedBridge, setHighlightedBridge] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tokenResponse, chainResponse] = await Promise.all([
+        const [tokenResponse, chainResponse, bridgeUsageResponse] = await Promise.all([
           fetch("http://localhost:3000/metrics/total_volume"),
           fetch("http://localhost:3000/metrics/total_volume_by_chain"),
+          fetch("http://localhost:3000/metrics/bridge_usage_count"),
         ]);
 
-        if (!tokenResponse.ok || !chainResponse.ok) {
+        if (!tokenResponse.ok || !chainResponse.ok || !bridgeUsageResponse.ok) {
           throw new Error("Failed to fetch data from the API");
         }
 
         const tokenData: Record<string, number> = await tokenResponse.json();
         const chainData: Record<string, number> = await chainResponse.json();
+        const bridgeUsageData: Record<string, number> = await bridgeUsageResponse.json();
 
-        // Sort data and set state
+        console.log('bridgeUsageData',bridgeUsageData)
+
         const sortedTokenVolumes = _.orderBy(
             Object.entries(tokenData.data),
             ([, volume]) => volume,
@@ -50,9 +56,15 @@ export default function Home() {
             ([, volume]) => volume,
             ["desc"]
         );
+        const sortedBridgeUsageCounts = _.orderBy(
+            Object.entries(bridgeUsageData.data),
+            ([, count]) => count,
+            ["desc"]
+        );
 
         setTokenVolumes(sortedTokenVolumes);
         setChainVolumes(sortedChainVolumes);
+        setBridgeUsageCounts(sortedBridgeUsageCounts);
         setError(null);
       } catch (err: any) {
         console.error(err);
@@ -62,7 +74,6 @@ export default function Home() {
 
     fetchData();
 
-    // WebSocket setup
     const socket = io("http://localhost:3000");
 
     socket.on("token_volume_update", (args: any) => {
@@ -103,6 +114,25 @@ export default function Home() {
       setTimeout(() => setHighlightedChain(null), 2000);
     });
 
+    socket.on("bridge_usage_count_update", (args: any) => {
+      const { bridgeName, usageCount } = args;
+      setBridgeUsageCounts((prev) => {
+        const updated = [...prev];
+        const index = updated.findIndex(([key]) => key === bridgeName);
+
+        if (index !== -1) {
+          updated[index][1] = usageCount;
+        } else {
+          updated.push([bridgeName, usageCount]);
+        }
+
+        return _.orderBy(updated, ([, count]) => count, ["desc"]);
+      });
+
+      setHighlightedBridge(bridgeName);
+      setTimeout(() => setHighlightedBridge(null), 2000);
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -120,8 +150,7 @@ export default function Home() {
             </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          {/* Token Volumes */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Token Volumes</h2>
             <ul className="space-y-3">
@@ -139,7 +168,6 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Chain Volumes */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Chain Volumes</h2>
             <ul className="space-y-3">
@@ -152,6 +180,23 @@ export default function Home() {
                   >
                     <span className="font-medium text-gray-600">{chainId}</span>
                     <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
+                  </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Bridge Usage</h2>
+            <ul className="space-y-3">
+              {bridgeUsageCounts.map(([bridgeName, usageCount]) => (
+                  <li
+                      key={bridgeName}
+                      className={`flex justify-between items-center text-lg p-3 rounded-md transition-all duration-500 ${
+                          highlightedBridge === bridgeName ? "bg-blue-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
+                      }`}
+                  >
+                    <span className="font-medium text-gray-600">{bridgeName}</span>
+                    <span className="text-gray-700">{usageCount}</span>
                   </li>
               ))}
             </ul>
