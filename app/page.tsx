@@ -2,20 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import _ from "lodash";
+
+type TokenVolume = [string, number];
+type ChainVolume = [string, number];
 
 export default function Home() {
-  const [tokenVolumes, setTokenVolumes] = useState<Record<string, number>>({});
-  const [chainVolumes, setChainVolumes] = useState<Record<string, number>>({});
+  const [tokenVolumes, setTokenVolumes] = useState<TokenVolume[]>([]);
+  const [chainVolumes, setChainVolumes] = useState<ChainVolume[]>([]);
   const [highlightedToken, setHighlightedToken] = useState<string | null>(null);
   const [highlightedChain, setHighlightedChain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch initial data
     const fetchData = async () => {
       try {
         const [tokenResponse, chainResponse] = await Promise.all([
-          fetch("http://localhost:3000/metrics/total_volume"), // Replace with your backend's API
+          fetch("http://localhost:3000/metrics/total_volume"),
           fetch("http://localhost:3000/metrics/total_volume_by_chain"),
         ]);
 
@@ -23,27 +26,24 @@ export default function Home() {
           throw new Error("Failed to fetch data from the API");
         }
 
-        const tokenData = await tokenResponse.json();
-        const chainData = await chainResponse.json();
-        console.log(tokenData.data, chainData.data);
+        const tokenData: Record<string, number> = await tokenResponse.json();
+        const chainData: Record<string, number> = await chainResponse.json();
 
-        const sortedTokenVolumes = Object.fromEntries(
-            Object.entries(tokenData.data).sort(([, volA], [, volB]) => Number(volB) - Number(volA))
-        ) as Record<string, number>;
+        // Sort data and set state
+        const sortedTokenVolumes = _.orderBy(
+            Object.entries(tokenData.data),
+            ([, volume]) => volume,
+            ["desc"]
+        );
+        const sortedChainVolumes = _.orderBy(
+            Object.entries(chainData.data),
+            ([, volume]) => volume,
+            ["desc"]
+        );
 
-        const sortedChainVolumes = Object.fromEntries(
-            Object.entries(chainData.data).sort(([, volA], [, volB]) => Number(volB) - Number(volA))
-        ) as Record<string, number>;
-
-        console.log(sortedTokenVolumes, 'sortedTokenVolumes');
-        console.log(sortedChainVolumes, 'sortedChainVolumes');
-
-
-        // Set state with sorted data
         setTokenVolumes(sortedTokenVolumes);
         setChainVolumes(sortedChainVolumes);
-
-        setError(null); // Clear errors if successful
+        setError(null);
       } catch (err: any) {
         console.error(err);
         setError("Failed to fetch data from the backend.");
@@ -52,50 +52,47 @@ export default function Home() {
 
     fetchData();
 
+    // WebSocket setup
+    const socket = io("http://localhost:3000");
 
-    // Setup WebSocket connection
-    const socket = io("http://localhost:3000"); // Replace with your backend WebSocket URL
-
-    // Listen for token volume updates
     socket.on("token_volume_update", (args: any) => {
       const { token, totalVolume } = args;
       setTokenVolumes((prev) => {
-        const updated = {
-          ...prev,
-          [token]: Number(totalVolume),
-        };
+        const updated = [...prev];
+        const index = updated.findIndex(([key]) => key === token);
 
-        // Sort entries by volume in descending order
-        const sorted = Object.fromEntries(
-            Object.entries(updated).sort(([, volA], [, volB]) => (volB as number) - (volA as number))
-        ) as Record<string, number>;
+        if (index !== -1) {
+          updated[index][1] = totalVolume;
+        } else {
+          updated.push([token, totalVolume]);
+        }
 
-        return sorted;
+        return _.orderBy(updated, ([, volume]) => volume, ["desc"]);
       });
+
       setHighlightedToken(token);
-      setTimeout(() => setHighlightedToken(null), 2000); // Remove highlight after 2 seconds
+      setTimeout(() => setHighlightedToken(null), 2000);
     });
 
     socket.on("chain_volume_update", (args: any) => {
       const { chainId, totalVolume } = args;
       setChainVolumes((prev) => {
-        const updated = {
-          ...prev,
-          [chainId]: Number(totalVolume),
-        };
+        const updated = [...prev];
+        const index = updated.findIndex(([key]) => key === chainId);
 
-        // Sort entries by volume in descending order
-        const sorted = Object.fromEntries(
-            Object.entries(updated).sort(([, volA], [, volB]) => (volB as number) - (volA as number))
-        ) as Record<string, number>;
+        if (index !== -1) {
+          updated[index][1] = totalVolume;
+        } else {
+          updated.push([chainId, totalVolume]);
+        }
 
-        return sorted;
+        return _.orderBy(updated, ([, volume]) => volume, ["desc"]);
       });
+
       setHighlightedChain(chainId);
-      setTimeout(() => setHighlightedChain(null), 2000); // Remove highlight after 2 seconds
+      setTimeout(() => setHighlightedChain(null), 2000);
     });
 
-    // Cleanup WebSocket on component unmount
     return () => {
       socket.disconnect();
     };
@@ -116,7 +113,7 @@ export default function Home() {
           <div className="bg-white p-6 shadow rounded">
             <h2 className="text-xl font-semibold mb-4">Token Volumes</h2>
             <ul className="list-disc list-inside">
-              {Object.entries(tokenVolumes).map(([token, volume]) => (
+              {tokenVolumes.map(([token, volume]) => (
                   <li
                       key={token}
                       className={`text-gray-700 transition-all duration-500 ${
@@ -133,14 +130,14 @@ export default function Home() {
           <div className="bg-white p-6 shadow rounded">
             <h2 className="text-xl font-semibold mb-4">Chain Volumes</h2>
             <ul className="list-disc list-inside">
-              {Object.entries(chainVolumes).map(([chain, volume]) => (
+              {chainVolumes.map(([chainId, volume]) => (
                   <li
-                      key={chain}
+                      key={chainId}
                       className={`text-gray-700 transition-all duration-500 ${
-                          highlightedChain === chain ? "bg-green-200" : ""
+                          highlightedChain === chainId ? "bg-green-200" : ""
                       }`}
                   >
-                    <span className="font-medium">{chain}</span>: {volume}
+                    <span className="font-medium">{chainId}</span>: {volume}
                   </li>
               ))}
             </ul>
