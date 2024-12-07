@@ -7,6 +7,16 @@ import _ from "lodash";
 type TokenVolume = [string, number];
 type ChainVolume = [string, number];
 
+const formatNumberToExponential = (value: number): string => {
+  if (value >= 1e6) {
+    return value.toExponential(2);
+  }
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export default function Home() {
   const [tokenVolumes, setTokenVolumes] = useState<TokenVolume[]>([]);
   const [chainVolumes, setChainVolumes] = useState<ChainVolume[]>([]);
@@ -113,21 +123,17 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {/* Token Volumes */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-              Token Volumes
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Token Volumes</h2>
             <ul className="space-y-3">
               {tokenVolumes.map(([token, volume]) => (
                   <li
                       key={token}
                       className={`flex justify-between items-center text-lg p-3 rounded-md transition-all duration-500 ${
-                          highlightedToken === token
-                              ? "bg-yellow-200 text-gray-800 shadow-lg"
-                              : "bg-gray-50 hover:bg-gray-100"
+                          highlightedToken === token ? "bg-yellow-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
                     <span className="font-medium text-gray-600">{token}</span>
-                    <span className="text-gray-700">{volume.toLocaleString()}</span>
+                    <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
                   </li>
               ))}
             </ul>
@@ -135,21 +141,17 @@ export default function Home() {
 
           {/* Chain Volumes */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-              Chain Volumes
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Chain Volumes</h2>
             <ul className="space-y-3">
               {chainVolumes.map(([chainId, volume]) => (
                   <li
                       key={chainId}
                       className={`flex justify-between items-center text-lg p-3 rounded-md transition-all duration-500 ${
-                          highlightedChain === chainId
-                              ? "bg-green-200 text-gray-800 shadow-lg"
-                              : "bg-gray-50 hover:bg-gray-100"
+                          highlightedChain === chainId ? "bg-green-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
                     <span className="font-medium text-gray-600">{chainId}</span>
-                    <span className="text-gray-700">{volume.toLocaleString()}</span>
+                    <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
                   </li>
               ))}
             </ul>
