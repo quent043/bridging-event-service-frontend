@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import _ from "lodash";
+import { CHAIN_NAME_MAP, TOKEN_NAME_MAP, BRIDGE_NAME_MAP } from "./constants";
+
 
 type TokenVolume = [string, number];
 type ChainVolume = [string, number];
@@ -154,6 +156,7 @@ export default function Home() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          {/* Token Volumes */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Token Volumes</h2>
             <ul className="space-y-3">
@@ -164,13 +167,14 @@ export default function Home() {
                           highlightedToken === token ? "bg-yellow-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium text-gray-600">{truncateAddress(token)}</span>
+                    <span className="font-medium text-gray-600">{TOKEN_NAME_MAP[token] || truncateAddress(token)}</span>
                     <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
                   </li>
               ))}
             </ul>
           </div>
 
+          {/* Chain Volumes */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Chain Volumes</h2>
             <ul className="space-y-3">
@@ -181,13 +185,14 @@ export default function Home() {
                           highlightedChain === chainId ? "bg-green-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium text-gray-600">{chainId}</span>
+                    <span className="font-medium text-gray-600">{CHAIN_NAME_MAP[chainId] || chainId}</span>
                     <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
                   </li>
               ))}
             </ul>
           </div>
 
+          {/* Bridge Usage */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Bridge Usage</h2>
             <ul className="space-y-3">
@@ -198,7 +203,7 @@ export default function Home() {
                           highlightedBridge === bridgeName ? "bg-blue-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium text-gray-600">{truncateAddress(bridgeName)}</span>
+                    <span className="font-medium text-gray-600">{BRIDGE_NAME_MAP[bridgeName] || truncateAddress(bridgeName)}</span>
                     <span className="text-gray-700">{usageCount}</span>
                   </li>
               ))}
