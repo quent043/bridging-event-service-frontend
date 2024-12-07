@@ -99,45 +99,57 @@ export default function Home() {
   }, []);
 
   return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <header className="text-center text-2xl font-bold mb-8">Live Dashboard</header>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 p-8">
+        <header className="text-center text-4xl font-bold text-gray-800 mb-8">
+          🌐 Live Bridge Event Feed
+        </header>
 
         {error && (
-            <div className="bg-red-500 text-white text-center p-4 rounded mb-8">
+            <div className="bg-red-500 text-white text-center p-4 rounded mb-8 shadow-md">
               {error}
             </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {/* Token Volumes */}
-          <div className="bg-white p-6 shadow rounded">
-            <h2 className="text-xl font-semibold mb-4">Token Volumes</h2>
-            <ul className="list-disc list-inside">
+          <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Token Volumes
+            </h2>
+            <ul className="space-y-3">
               {tokenVolumes.map(([token, volume]) => (
                   <li
                       key={token}
-                      className={`text-gray-700 transition-all duration-500 ${
-                          highlightedToken === token ? "bg-yellow-200" : ""
+                      className={`flex justify-between items-center text-lg p-3 rounded-md transition-all duration-500 ${
+                          highlightedToken === token
+                              ? "bg-yellow-200 text-gray-800 shadow-lg"
+                              : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium">{token}</span>: {volume}
+                    <span className="font-medium text-gray-600">{token}</span>
+                    <span className="text-gray-700">{volume.toLocaleString()}</span>
                   </li>
               ))}
             </ul>
           </div>
 
           {/* Chain Volumes */}
-          <div className="bg-white p-6 shadow rounded">
-            <h2 className="text-xl font-semibold mb-4">Chain Volumes</h2>
-            <ul className="list-disc list-inside">
+          <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Chain Volumes
+            </h2>
+            <ul className="space-y-3">
               {chainVolumes.map(([chainId, volume]) => (
                   <li
                       key={chainId}
-                      className={`text-gray-700 transition-all duration-500 ${
-                          highlightedChain === chainId ? "bg-green-200" : ""
+                      className={`flex justify-between items-center text-lg p-3 rounded-md transition-all duration-500 ${
+                          highlightedChain === chainId
+                              ? "bg-green-200 text-gray-800 shadow-lg"
+                              : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium">{chainId}</span>: {volume}
+                    <span className="font-medium text-gray-600">{chainId}</span>
+                    <span className="text-gray-700">{volume.toLocaleString()}</span>
                   </li>
               ))}
             </ul>
