@@ -30,5 +30,3 @@ export const BRIDGE_NAME_MAP: Record<string, string> = {
     "0x86c029f16460117b4488dbcebd1ea3d4f22aee8859770297bc010a8caaa1b116": "Multichain Router",
     "0xea698b477c99ea804835b684c4c3009f282df52a6bf660d4006c72a3b60fd670": "Synapse",
 };
-
-//TODO: instal project from scratch
