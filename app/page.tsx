@@ -18,6 +18,11 @@ const formatNumberToExponential = (value: number): string => {
   });
 };
 
+const truncateAddress = (address: string, startLength: number = 6, endLength: number = 4): string => {
+  if (address.length <= startLength + endLength) return address;
+  return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
+};
+
 export default function Home() {
   const [tokenVolumes, setTokenVolumes] = useState<TokenVolume[]>([]);
   const [chainVolumes, setChainVolumes] = useState<ChainVolume[]>([]);
@@ -43,8 +48,6 @@ export default function Home() {
         const tokenData: Record<string, number> = await tokenResponse.json();
         const chainData: Record<string, number> = await chainResponse.json();
         const bridgeUsageData: Record<string, number> = await bridgeUsageResponse.json();
-
-        console.log('bridgeUsageData',bridgeUsageData)
 
         const sortedTokenVolumes = _.orderBy(
             Object.entries(tokenData.data),
@@ -114,22 +117,22 @@ export default function Home() {
       setTimeout(() => setHighlightedChain(null), 2000);
     });
 
-    socket.on("bridge_usage_count_update", (args: any) => {
-      const { bridgeName, usageCount } = args;
+    socket.on("bridge_usage_update", (args: any) => {
+      const { bridge, usageCount } = args;
       setBridgeUsageCounts((prev) => {
         const updated = [...prev];
-        const index = updated.findIndex(([key]) => key === bridgeName);
+        const index = updated.findIndex(([key]) => key === bridge);
 
         if (index !== -1) {
           updated[index][1] = usageCount;
         } else {
-          updated.push([bridgeName, usageCount]);
+          updated.push([bridge, usageCount]);
         }
 
         return _.orderBy(updated, ([, count]) => count, ["desc"]);
       });
 
-      setHighlightedBridge(bridgeName);
+      setHighlightedBridge(bridge);
       setTimeout(() => setHighlightedBridge(null), 2000);
     });
 
@@ -161,7 +164,7 @@ export default function Home() {
                           highlightedToken === token ? "bg-yellow-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium text-gray-600">{token}</span>
+                    <span className="font-medium text-gray-600">{truncateAddress(token)}</span>
                     <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
                   </li>
               ))}
@@ -195,7 +198,7 @@ export default function Home() {
                           highlightedBridge === bridgeName ? "bg-blue-200 text-gray-800 shadow-lg" : "bg-gray-50 hover:bg-gray-100"
                       }`}
                   >
-                    <span className="font-medium text-gray-600">{bridgeName}</span>
+                    <span className="font-medium text-gray-600">{truncateAddress(bridgeName)}</span>
                     <span className="text-gray-700">{usageCount}</span>
                   </li>
               ))}
