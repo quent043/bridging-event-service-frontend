@@ -39,7 +39,7 @@ export default function Home() {
       try {
         const [tokenResponse, chainResponse, bridgeUsageResponse] = await Promise.all([
           fetch("http://localhost:3000/metrics/total_volume"),
-          fetch("http://localhost:3000/metrics/total_volume_by_chain"),
+          fetch("http://localhost:3000/metrics/total_transactions_by_chain"),
           fetch("http://localhost:3000/metrics/bridge_usage_count"),
         ]);
 
@@ -100,16 +100,16 @@ export default function Home() {
       setTimeout(() => setHighlightedToken(null), 2000);
     });
 
-    socket.on("chain_volume_update", (args: any) => {
-      const { chainId, totalVolume } = args;
+    socket.on("transactions_per_chain_update", (args: any) => {
+      const { chainId, totalVolume: txCount } = args;
       setChainVolumes((prev) => {
         const updated = [...prev];
         const index = updated.findIndex(([key]) => key === chainId);
 
         if (index !== -1) {
-          updated[index][1] = totalVolume;
+          updated[index][1] = txCount;
         } else {
-          updated.push([chainId, totalVolume]);
+          updated.push([chainId, txCount]);
         }
 
         return _.orderBy(updated, ([, volume]) => volume, ["desc"]);
@@ -174,9 +174,9 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Chain Volumes */}
+          {/* Chain Tx Count */}
           <div className="bg-white p-6 shadow-xl rounded-lg transform transition duration-300">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Chain Volumes</h2>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Chain Tx Count</h2>
             <ul className="space-y-3">
               {chainVolumes.map(([chainId, volume]) => (
                   <li
@@ -186,7 +186,7 @@ export default function Home() {
                       }`}
                   >
                     <span className="font-medium text-gray-600">{CHAIN_NAME_MAP[chainId] || chainId}</span>
-                    <span className="text-gray-700">{formatNumberToExponential(Number(volume))}</span>
+                    <span className="text-gray-700">{Number(volume)}</span>
                   </li>
               ))}
             </ul>
