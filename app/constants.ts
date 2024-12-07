@@ -1,5 +1,6 @@
 export const CHAIN_NAME_MAP: Record<string, string> = {
     "10": "Optimism",
+    "56": "BNB",
     "137": "Polygon",
     "324": "zkSync Era",
     "8453": "Base",
@@ -11,6 +12,7 @@ export const TOKEN_NAME_MAP: Record<string, string> = {
     "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": "Ether",
     "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48": "USDC",
     "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2": "WETH",
+    "0xaaeE1A9723aaDB7afA2810263653A34bA2C21C7a": "Mog Coin",
     "0xdAC17F958D2ee523a2206206994597C13D831ec7": "USDT",
     "0x467Bccd9d29f223BcE8043b84E8C8B282827790F": "Multichain Token",
     "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0": "MATIC",
