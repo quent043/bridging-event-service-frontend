@@ -5,6 +5,7 @@ export const CHAIN_NAME_MAP: Record<string, string> = {
     "324": "zkSync Era",
     "8453": "Base",
     "42161": "Arbitrum",
+    "43114": "Avalanche",
     "59144": "Linea",
 };
 
@@ -20,7 +21,8 @@ export const TOKEN_NAME_MAP: Record<string, string> = {
     "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F": "SNX",
     "0x55296f69f40Ea6d20E478533C15A6B08B654E758": "ZRX",
     "0x8f693ca8D21b157107184d29D398A8D082b38b76": "OctoFi",
-    "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599": "WBTC"
+    "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599": "WBTC",
+    '0xed328E9C1179a30ddC1E7595E036AEd8760C22aF': "MCADE"
 };
 
 
