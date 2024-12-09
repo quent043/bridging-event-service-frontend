@@ -12,7 +12,7 @@ export const CHAIN_NAME_MAP: Record<string, string> = {
     "43114": "Avalanche",
     "59144": "Linea",
     "81457": "Blast",
-    "534352": "Sccroll",
+    "534352": "Scroll",
     "7777777": "Zora",
 };
 
