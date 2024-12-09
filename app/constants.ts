@@ -43,6 +43,7 @@ export const TOKEN_NAME_MAP: Record<string, string> = {
     "0xA735A3AF76CC30791C61c10d585833829d36CBe0": "imgnAI",
     "0xDd66781D0E9a08D4FBb5eC7BAc80B691BE27F21D": "AXGT",
     "0x72e4f9F808C49A2a61dE9C5896298920Dc4EEEa9": "BITCOIN",
+    "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F": "SNX ",
 };
 
 export const BRIDGE_NAME_MAP: Record<string, string> = {
