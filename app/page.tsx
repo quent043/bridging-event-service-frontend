@@ -41,6 +41,10 @@ export default function Home() {
           fetch("http://localhost:3000/metrics/total_volume"),
           fetch("http://localhost:3000/metrics/total_transactions_by_chain"),
           fetch("http://localhost:3000/metrics/bridge_usage_count"),
+
+          // fetch("https://bridging-event-service-production.up.railway.app/metrics/total_volume"),
+          // fetch("https://bridging-event-service-production.up.railway.app/metrics/total_transactions_by_chain"),
+          // fetch("https://bridging-event-service-production.up.railway.app/metrics/bridge_usage_count"),
         ]);
 
         if (!tokenResponse.ok || !chainResponse.ok || !bridgeUsageResponse.ok) {
@@ -56,11 +60,13 @@ export default function Home() {
             ([, volume]) => volume,
             ["desc"]
         );
+
         const sortedChainVolumes = _.orderBy(
             Object.entries(chainData.data),
             ([, volume]) => volume,
             ["desc"]
         );
+
         const sortedBridgeUsageCounts = _.orderBy(
             Object.entries(bridgeUsageData.data),
             ([, count]) => count,
@@ -80,6 +86,7 @@ export default function Home() {
     fetchData();
 
     const socket = io("http://localhost:3000");
+    // const socket = io("https://bridging-event-service-production.up.railway.app");
 
     socket.on("token_volume_update", (args: any) => {
       const { token, totalVolume } = args;
